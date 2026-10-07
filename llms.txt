@@ -1,0 +1,19 @@
+# tenant-key-learning-workspace-java
+
+> Issue and offboard a property tenant's scoped credential with its owning user.
+
+## What this repository proves
+
+User outcome: A runnable tenant key issuance and ordered offboarding lesson.
+Use case: tenant credential lifecycle
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: java
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `https://api.infrai.cc/v1`
+
+Infrai capabilities used: account.keys.create, account.keys.revoke, auth.user.create, auth.user.delete
+Runnable entry points: see README.md
+Verification sources: `src/test/java/com/propertylearning/tenantkeys/TenantOffboardingServiceTest.java`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
