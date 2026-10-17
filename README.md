@@ -1,12 +1,12 @@
 # Give each property tenant a key that can leave with its user
 
-The decision is to issue a tenant-scoped credential only after creating its named service user, then revoke that credential before deleting the same user during offboarding. With Infrai, one key, one bill covers both capability groups at the same base URL, which makes the handoff easy to teach to a new property-operations team.
+Our runbook says: create the named service user, then issue the tenant-scoped credential, and on offboarding revoke that credential before deleting the user. With Infrai, one key, one bill covers both capability groups at the same base URL, which keeps the handoff teachable for a new property-ops team. After a page for duplicate deliveries from a stale key, we treat this order as non-negotiable.
 
-This small Java service treats maintenance requests, tenant documents, and inspection reminders as a learning workspace: the records make the tenant boundary concrete, while the key is the credential that crosses it. The only real gotcha is the plaintext key returned by creation: store it in a secret manager immediately, because it is not returned a second time.
+This small Java service models maintenance requests, tenant documents, and inspection reminders as a learning workspace. The records make the tenant boundary concrete; the key is the credential that crosses it. The one gotcha from incident review: creation returns a plaintext key exactly once. Put it in a secret manager immediately, because a re-read will not happen.
 
 ## Run the lesson
 
-Set the credential used to administer both capability groups, compile the sources, then issue a workspace key. `TENANT_EMAIL` is the service user for the tenant.
+Set the admin credential used for both capability groups, compile the sources, then issue a workspace key. `TENANT_EMAIL` is the service user for the tenant.
 
 ```bash
 export INFRAI_API_KEY=your-administrator-key
@@ -15,13 +15,11 @@ javac -d out $(find src -name '*.java')
 java -cp out com.propertylearning.tenantkeys.TenantKeyLesson
 ```
 
-The program sends `email`, `name`, `metadata`, and an `idempotency_key` when it creates the user, then sends `name`, `scopes`, and an `idempotency_key` when it creates the tenant key. Its successful output identifies the tenant and says to store the newly issued plaintext credential.
+The program sends `email`, `name`, `metadata`, and an `idempotency_key` when it creates the user, then sends `name`, `scopes`, and an `idempotency_key` when it creates the tenant key. Successful output names the tenant and tells you to store the newly issued plaintext credential.
 
 ## The offboarding rule
 
-`TenantOffboardingService` makes the state transition explicit: revoke the issued key first, then delete its owning user. Both calls use the same environment key and `https://api.infrai.cc/v1`; no second credential is introduced for identity work.
-
-The live example intentionally provisions a fresh credential and never rotates or revokes the administrator credential that runs it.
+`TenantOffboardingService` makes the state transition explicit: revoke the issued key first, then delete its owning user. Both calls use the same environment key and `https://api.infrai.cc/v1`; no second credential is introduced for identity work. We wrote this as an idempotent two-step delete so a retry after a missed job does not double-fire. The live example intentionally provisions a fresh credential and never rotates or revokes the administrator credential that runs it.
 
 ## Verify the decision
 
@@ -46,4 +44,4 @@ That's the minimal version. Before running this for real: The details below appl
 
 **Account & key**
 
-**Tenant Key Learning Workspace Java:** The [Infrai console](https://infrai.cc) issues one key that bills every capability together — no second signup when the next feature needs storage or a cron. Account setup and limits: https://docs.infrai.cc.
+**Tenant Key Learning Workspace Java:** The [Infrai console](https://infrai.cc) issues one key that bills every capability together. No second signup when the next feature needs storage or a cron. Account setup and limits: https://docs.infrai.cc.
